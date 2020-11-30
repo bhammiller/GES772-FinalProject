@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xml:lang="en"><Esri><CreaDate>20201123</CreaDate><CreaTime>16294300</CreaTime><ArcGISFormat>1.0</ArcGISFormat><ArcGISstyle>FGDC CSDGM Metadata</ArcGISstyle><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="c:\program files (x86)\arcgis\desktop10.7\ArcToolbox\Toolboxes\Data Management Tools.tbx\DeleteField" Date="20201123" Time="162943">DeleteField SEMS_Ver_2 FID_2;OBJECTID_1;Shape_Leng;Shape_Area</Process></lineage></DataProperties></Esri></metadata>

@@ -1,0 +1,113 @@
+var owsrootUrl = 'https://127.0.0.1:8081/geoserver/ows';
+
+var defaultParameters = {
+    service : 'WFS',
+    version : '2.0',
+    request : 'GetFeature',
+    typeName : 'superfund:SEMS',
+    outputFormat : 'text/javascript',
+    format_options : 'callback:getJson',
+    SrsName : 'EPSG:4326'
+};
+
+var parameters = L.Util.extend(defaultParameters);
+var URL = owsrootUrl + L.Util.getParamString(parameters);
+
+var WFSLayer = null;
+var ajax = $.ajax({
+    url : URL,
+    dataType : 'jsonp',
+    jsonpCallback : 'getJson',
+    success : function (response) {
+        WFSLayer = L.geoJson(response, {
+            style: function (feature) {
+                return {
+                    stroke: false,
+                    fillColor: 'FFFFFF',
+                    fillOpacity: 0
+                };
+            },
+            onEachFeature: function (feature, layer) {
+                popupOptions = {maxWidth: 200};
+                layer.bindPopup("Popup text, access attributes with feature.properties.ATTRIBUTE_NAME"
+                    ,popupOptions);
+            }
+        }).addTo(map);
+    }
+});
+
+
+
+
+
+var superfund = new L.geoJson();
+	superfund.addTo(map);
+	
+	$.ajax({
+	dataType: "json",
+	url: "http://127.0.0.1:8081/geoserver/ows?service=wfs&version=1.0.0&request=GetFeature&typeName=superfund:SEMS&outputFormat=json",
+	success: function(data) {
+    	$(data.features).each(function(key, data) {
+        	superfund.addData(data);
+    	});
+	}
+	}).error(function() {});
+
+
+
+
+    $.ajax('http://127.0.0.1:8081/geoserver/wfs',{
+     type: 'GET',
+     data: {
+        service: 'WFS',
+        version: '1.1.0',
+        request: 'GetFeature',
+        typename: 'superfund:SEMS',
+        //CQL_FILTER: "column='demo'",
+        srsname: 'EPSG:4326',
+        outputFormat: 'text/javascript',
+        },
+    dataType: 'jsonp',
+    jsonpCallback:'callback:handleJson',
+    jsonp:'format_options'
+    });
+    //Geojson style file
+    var myStyle = {
+        'color': 'red'
+    }
+	function handleJson(data) {
+        selectedArea = L.geoJson(data, {
+            style: myStyle,
+            onEachFeature: function(feature, layer) {
+                layer.bindPopup(`Name: ${feature.properties.name_of_your_property}`)
+                }
+            }).addTo(map);
+        map.fitBounds(selectedArea.getBounds());
+    };
+        var input2;
+        if(input2 == null){
+            input2='';
+        }
+
+        $(document).ready(function() {
+            $("checkbox").click(function(){
+                var favorite = [];
+                $.each($("input[name='input2']:checked"), function(){            
+                    favorite.push($(this).val());
+                });
+                if(input2 == null){
+                    input2='';
+                }
+                
+            });
+        });
+        <div onchange="load_SuperfundData(document.getElementById('input1').value,document.getElementById('input2').value,document.getElementById('input3').value)">
+		    <h2>Select Status</h2>
+			    <input type="checkbox" name="input2" value="CURRENTLY ON THE FINAL NPL">On the NPL</option>
+			    <input type="checkbox" name="input2" value="DELETED FROM THE FINAL NPL">Removed from the NPL</option>
+			    <input type="checkbox" name="input2" value="NOT ON THE NPL">Not on the NPL</option>
+			    <input type="checkbox" name="input2" value="PROPOSED FOR NPL">Proposed for the NPL</option>
+			    <input type="checkbox" name="input2" value="REMOVED FROM PROPOSED NPL">Removed from the NPL proposal list</option>
+			    <input type="checkbox" name="input2" value="SITE IS PART OF NPL SITE">Part of a NPL site</option>
+			    <input type="checkbox" name="input2" value="WITHDRAWN FROM THE FINAL NPL">Withdrawn from the NPL</option>
+		</div>

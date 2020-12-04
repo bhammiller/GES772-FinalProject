@@ -15,7 +15,7 @@
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 	<script src="js/leaflet-0.7.2/leaflet.ajax.min.js"></script>
 	<script type="text/javascript" src="https://leafletjs.com/examples/choropleth/us-states.js"></script>
-
+	<script src="lib/Leaflet-WMS.js"></script>
 	<style>
 		html, body {
 			height: 100%;
@@ -48,7 +48,7 @@
 		}
 	</script>
 	<div id="container" style="display: flex;justify-content: space-between;">
-		<div onchange="input8=document.getElementById('input1').value;zoomToFeature2(input8);load_SuperfundData(input8,document.getElementById('input2').value,document.getElementById('input3').value)">
+		<div onchange="input8=document.getElementById('input1').value;load_SuperfundData(input8,document.getElementById('input2').value,document.getElementById('input3').value)">
 		  <h2> Select State</h2>
 		  <select id='input1' value ='' >
 				
@@ -186,7 +186,21 @@
 		style: style,
 		onEachFeature: onEachFeature
 	}).addTo(map);
-
+	// Superfund site info
+	map.on('click', function(e) {
+  		SuperfundData.getFeatureInfo({
+    		latlng: e.latlng,
+    		done: function(featureCollection) {
+    		console.log('getFeatureInfosucceed: ', featureCollection);
+  		},
+  		fail: function(errorThrown) {
+    		console.log('getFeatureInfo failed: ', errorThrown);
+  		},
+  		always: function() {
+     		 console.log('getFeatureInfo finished');
+  		}
+  		});
+	});
     
 	
 

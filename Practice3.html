@@ -11,11 +11,13 @@
 	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+    <!----><script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 	<script src="js/leaflet-0.7.2/leaflet.ajax.min.js"></script>
 	<script type="text/javascript" src="https://leafletjs.com/examples/choropleth/us-states.js"></script>
-
+	<script src="lib/vendor/spin.js/spin.js"></script>
+  	<script src="lib/vendor/leaflet/leaflet.js"></script>
+  	<script src="lib/Leaflet-WMS.js"></script>
 	<style>
 		html, body {
 			height: 100%;
@@ -48,7 +50,7 @@
 		}
 	</script>
 	<div id="container" style="display: flex;justify-content: space-between;">
-		<div onchange="input8=document.getElementById('input1').value;zoomToFeature2(input8);load_SuperfundData(input8,document.getElementById('input2').value,document.getElementById('input3').value)">
+		<div onchange="input8=document.getElementById('input1').value;load_SuperfundData(input8,document.getElementById('input2').value,document.getElementById('input3').value)">
 		  <h2> Select State</h2>
 		  <select id='input1' value ='' >
 				
@@ -184,21 +186,22 @@
 	//States Layer
 	geojson = L.geoJson(statesData, {
 		style: style,
-		onEachFeature: onEachFeature
+		onEachFeature: onEachFeature,
+		
 	}).addTo(map);
-
-    // Zoom to selected state2
-    function zoomToFeature2(e) {
-		for (var i = 0; i < statesData.features.length; i++) {
-			if(statesData.features[i].properties.name === e){
-                console.log(statesData.features[i].properties.name);
-                dropstate=statesData.features[i];
-                console.log(dropstate);
-                map.fitBounds(dropstate.getBounds())
-            };
-			};
-	}
+	// Superfund site info
 	
+    function onMapClick(e) {
+console.log("heynow");
+var mapWidth=map._container.offsetWidth;
+var mapHeight=map._container.offsetHeight;
+console.log(e.containerPoint.x * 800 / mapWidth);
+console.log(e.containerPoint.y * 500 / mapHeight);
+console.log(e);
+
+
+};
+map.on('click',onMapClick);	
 
 	
 

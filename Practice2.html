@@ -11,10 +11,11 @@
 	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
-    <!----><script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 	<script src="js/leaflet-0.7.2/leaflet.ajax.min.js"></script>
 	<script type="text/javascript" src="https://leafletjs.com/examples/choropleth/us-states.js"></script>
+	
 	
 	<style>
 		html, body {
@@ -32,6 +33,7 @@
 </head>
 <body onload="LoadStatesInput()">
 	<script type="text/javascript">
+		// Populates States dropdown with states
 		function LoadStatesInput(){
             var input8 = '';
 			var statesinput = document.getElementById("input1");
@@ -51,9 +53,7 @@
 	<div id="container" style="display: flex;justify-content: space-between;">
 		<div onchange="input8=document.getElementById('input1').value;load_SuperfundData(input8,document.getElementById('input2').value,document.getElementById('input3').value);dropdownzoom(input8)">
 		  <h2> Select State</h2>
-		  <select id='input1' value ='' >
-				
-		  </select>
+		  <select id='input1' value ='' ></select>
 		</div>
 		<div>
 			<h2>Select Status</h2>
@@ -84,6 +84,7 @@
 
 <script type="text/javascript">
 
+	// Base map and intial map view
 	var map = L.map('map').setView([37.8, -96], 4);
 
 	L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
@@ -95,7 +96,11 @@
 		tileSize: 512,
 		zoomOffset: -1
 	}).addTo(map);
-	var SuperfundData = null;
+
+	// Global variables
+	var SuperfundData = new L.geoJson();
+	//var statesuperfund = null;
+	//var superfunding = new L.geoJson();
 	//console.log(statesData)
 	
     //loads superfund data
@@ -104,41 +109,75 @@
     	if (SuperfundData != null) {
     		map.removeLayer(SuperfundData);
         }
+		
 		if (activestatus == '' && nplStatus == ''){
-    		SuperfundData = L.tileLayer.wms('http://127.0.0.1:8081/geoserver/superfund/wms?', {
-    			layers : 'superfund:SEMS_Ver_3',
-    			transparent : true,
-    			format : 'image/png',
-    			cql_filter : "STATE_NAME IN ('" + statename + "')",
-    			opacity : 1
-    		}).addTo(map);
+			$.ajax('http://127.0.0.1:8081/geoserver/wfs',{
+     		type: 'GET',
+     		data: {
+        		service: 'WFS',
+        		version: '1.1.0',
+        		request: 'GetFeature',
+        		typename: 'superfund:SEMS_Ver_3',
+        		cql_filter: "STATE_NAME IN ('" + statename + "')",
+        		srsname: 'EPSG:4326',
+        		outputFormat: 'text/javascript',
+        	},
+    		dataType: 'jsonp',
+    		jsonpCallback:'callback:getJson',
+    		jsonp:'format_options'
+    	});
         }else if(statename != '' && nplStatus == ''){
-			SuperfundData = L.tileLayer.wms('http://127.0.0.1:8081/geoserver/superfund/wms?', {
-    			layers : 'superfund:SEMS_Ver_3',
-    			transparent : true,
-    			format : 'image/png',
-    			cql_filter : "STATE_NAME IN ('" + statename + "') AND ACTIVE_STA IN ('" + activestatus + "')",
-    			opacity : 1
-    		}).addTo(map);
+			$.ajax('http://127.0.0.1:8081/geoserver/wfs',{
+     		type: 'GET',
+     		data: {
+        		service: 'WFS',
+        		version: '1.1.0',
+        		request: 'GetFeature',
+        		typename: 'superfund:SEMS_Ver_3',
+        		cql_filter: "STATE_NAME IN ('" + statename + "') AND ACTIVE_STA IN ('" + activestatus + "')",
+        		srsname: 'EPSG:4326',
+        		outputFormat: 'text/javascript',
+        	},
+    		dataType: 'jsonp',
+    		jsonpCallback:'callback:getJson',
+    		jsonp:'format_options'
+    	});
 		}else if(statename != '' && activestatus == ''){
-			SuperfundData = L.tileLayer.wms('http://127.0.0.1:8081/geoserver/superfund/wms?', {
-    			layers : 'superfund:SEMS_Ver_3',
-    			transparent : true,
-    			format : 'image/png',
-    			cql_filter : "STATE_NAME IN ('" + statename + "') AND INTEREST_T IN ('" + nplStatus + "')",
-    			opacity : 1
-    		}).addTo(map);
+			$.ajax('http://127.0.0.1:8081/geoserver/wfs',{
+     		type: 'GET',
+     		data: {
+        		service: 'WFS',
+        		version: '1.1.0',
+        		request: 'GetFeature',
+        		typename: 'superfund:SEMS_Ver_3',
+        		cql_filter: "STATE_NAME IN ('" + statename + "') AND INTEREST_T IN ('" + nplStatus + "')",
+        		srsname: 'EPSG:4326',
+        		outputFormat: 'text/javascript',
+        	},
+    		dataType: 'jsonp',
+    		jsonpCallback:'callback:getJson',
+    		jsonp:'format_options'
+    	});
 		}else if(statename != '' && nplStatus != '' && activestatus != ''){
-			SuperfundData = L.tileLayer.wms('http://127.0.0.1:8081/geoserver/superfund/wms?', {
-    			layers : 'superfund:SEMS_Ver_3',
-    			transparent : true,
-    			format : 'image/png',
-    			cql_filter : "STATE_NAME IN ('" + statename + "') AND ACTIVE_STA IN ('" + activestatus + "') AND INTEREST_T IN ('" + nplStatus + "')",
-    			opacity : 1
-    		}).addTo(map);
+			$.ajax('http://127.0.0.1:8081/geoserver/wfs',{
+     		type: 'GET',
+     		data: {
+        		service: 'WFS',
+        		version: '1.1.0',
+        		request: 'GetFeature',
+        		typename: 'superfund:SEMS_Ver_3',
+        		cql_filter: "STATE_NAME IN ('" + statename + "') AND ACTIVE_STA IN ('" + activestatus + "') AND INTEREST_T IN ('" + nplStatus + "')",
+        		srsname: 'EPSG:4326',
+        		outputFormat: 'text/javascript',
+        	},
+    		dataType: 'jsonp',
+    		jsonpCallback:'callback:getJson',
+    		jsonp:'format_options'
+    	});
 		};
 	};
-	
+
+	// Start of States layer part of page
     //States Style
     function style(feature) {
 		return {
@@ -163,20 +202,20 @@
 			layer.bringToFront();
 		}	
 	}
-    // States layer
+    // States layer container
 	var geojson;
-	// States function
+	// States layer function function
 	function resetHighlight(e) {
 		geojson.resetStyle(e.target);	
 	}
-	// States function
+	// States layer function
 	function zoomToFeature(e) {
 		map.fitBounds(e.target.getBounds());
         input8= e.target.feature.properties.name;
         load_SuperfundData(input8,document.getElementById('input2').value,document.getElementById('input3').value);
         //console.log(e.target.feature);
 	}
-	// States function
+	// States layer function
 	function onEachFeature(feature, layer) {
 		layer.on({
 			mouseover: highlightFeature,
@@ -190,8 +229,9 @@
 		onEachFeature: onEachFeature,
 		
 	}).addTo(map);
-	// Superfund site info
-	// zoom to state on dropdown
+	// End of States layer part of page
+
+	// Zoom to selected state on dropdown
 	function dropdownzoom(dropdownselected){
 		for (var i = 0; i < statesData.features.length; i++) {
 			if(statesData.features[i].properties.name === dropdownselected){
@@ -213,7 +253,23 @@
 				
 		};
 	};
+	// End of zoom to selected state on dropdown
+		
+	//creates map layer with popup
+	function getJson(data) {
+		SuperfundData.clearLayers();	
+		console.log("check2");
+			console.log(data);
 
+			//superfunding.addData(data);
+			SuperfundData = L.geoJSON(data, {
+  				onEachFeature: function (feature, layer) {
+    				layer.bindPopup(feature.properties.PRIMARY_NA);
+  				}
+			}).addTo(map);
+			
+			console.log(SuperfundData);
+    };
 	
 
 </script>

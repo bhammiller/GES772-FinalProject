@@ -3,7 +3,7 @@
 <html>
 <head>
 	
-	<title>Practice1</title>
+	<title>Superfund Finder</title>
 
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,11 +11,11 @@
 	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+    <!----><script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 	<script src="js/leaflet-0.7.2/leaflet.ajax.min.js"></script>
 	<script type="text/javascript" src="https://leafletjs.com/examples/choropleth/us-states.js"></script>
-
+	
 	<style>
 		html, body {
 			height: 100%;
@@ -33,6 +33,7 @@
 <body onload="LoadStatesInput()">
 	<script type="text/javascript">
 		function LoadStatesInput(){
+            var input8 = '';
 			var statesinput = document.getElementById("input1");
 			for (var i = 0; i < statesData.features.length; i++) {
 				if(statesData.features[i].properties.name === "Puerto Rico" ||
@@ -44,18 +45,19 @@
 				//console.log(statesData.features[i].properties.name)
 				statesinput.options.add(option);
 			};
+			
 		}
 	</script>
 	<div id="container" style="display: flex;justify-content: space-between;">
-		<div onchange="load_SuperfundData(document.getElementById('input1').value,document.getElementById('input2').value,document.getElementById('input3').value)">
+		<div onchange="input8=document.getElementById('input1').value;load_SuperfundData(input8,document.getElementById('input2').value,document.getElementById('input3').value);dropdownzoom(input8)">
 		  <h2> Select State</h2>
-		  <select id='input1' >
+		  <select id='input1' value ='' >
 				
 		  </select>
 		</div>
 		<div>
 			<h2>Select Status</h2>
-			<select type="text "id='input2' value="" onchange="load_SuperfundData(document.getElementById('input1').value,document.getElementById('input2').value,document.getElementById('input3').value)">
+			<select type="text "id='input2' value="" onchange="load_SuperfundData(input8,document.getElementById('input2').value,document.getElementById('input3').value)">
 				<option value="" selected>Any Status</option>
 				<option value="CURRENTLY ON THE FINAL NPL">On the NPL</option>
 				<option value="DELETED FROM THE FINAL NPL">Removed from the NPL</option>
@@ -69,7 +71,7 @@
 		
 		<div>
 			<h2>NPL or Non-NPL</h2>
-			<select type="text "id='input3' value="" onchange="load_SuperfundData(document.getElementById('input1').value,document.getElementById('input2').value,document.getElementById('input3').value)">
+			<select type="text "id='input3' value="" onchange="load_SuperfundData(input8,document.getElementById('input2').value,document.getElementById('input3').value)">
 				<option value="" selected>Either</option>
 				<option value="SUPERFUND (NON-NPL)">Non-NPL Superfund</option>
 				<option value="SUPERFUND NPL">Superfund NPL</option>
@@ -94,10 +96,11 @@
 		zoomOffset: -1
 	}).addTo(map);
 	var SuperfundData = null;
-	console.log(statesData)
+	//console.log(statesData)
 	
+    //loads superfund data
 	window.load_SuperfundData = function (statename,activestatus,nplStatus) { 
-    	
+		
     	if (SuperfundData != null) {
     		map.removeLayer(SuperfundData);
         }
@@ -109,7 +112,6 @@
     			cql_filter : "STATE_NAME IN ('" + statename + "')",
     			opacity : 1
     		}).addTo(map);
-
         }else if(statename != '' && nplStatus == ''){
 			SuperfundData = L.tileLayer.wms('http://127.0.0.1:8081/geoserver/superfund/wms?', {
     			layers : 'superfund:SEMS_Ver_3',
@@ -135,10 +137,82 @@
     			opacity : 1
     		}).addTo(map);
 		};
-};
-
-
+	};
 	
+    //States Style
+    function style(feature) {
+		return {
+			weight: 2,
+			opacity: 1,
+			color: 'black',
+			dashArray: '3',
+			fillOpacity: 0.1,
+		};
+	}
+	//States Function
+    function highlightFeature(e) {
+		var layer = e.target;
+		layer.setStyle({
+			weight: 5,
+			color: '#666',
+			dashArray: '',
+			fillOpacity: 0.3
+		});
+
+		if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+			layer.bringToFront();
+		}	
+	}
+    // States layer
+	var geojson;
+	// States function
+	function resetHighlight(e) {
+		geojson.resetStyle(e.target);	
+	}
+	// States function
+	function zoomToFeature(e) {
+		map.fitBounds(e.target.getBounds());
+        input8= e.target.feature.properties.name;
+        load_SuperfundData(input8,document.getElementById('input2').value,document.getElementById('input3').value);
+        //console.log(e.target.feature);
+	}
+	// States function
+	function onEachFeature(feature, layer) {
+		layer.on({
+			mouseover: highlightFeature,
+			mouseout: resetHighlight,
+			click: zoomToFeature
+		});
+	}
+	//States Layer
+	geojson = L.geoJson(statesData, {
+		style: style,
+		onEachFeature: onEachFeature,
+		
+	}).addTo(map);
+	// Superfund site info
+	// zoom to state on dropdown
+	function dropdownzoom(dropdownselected){
+		for (var i = 0; i < statesData.features.length; i++) {
+			if(statesData.features[i].properties.name === dropdownselected){
+				var coords =statesData.features[i].geometry.coordinates;
+				var lats = []; var lngs = [];
+				for (var i = 0; i < coords[0].length; i++)  {
+    				lats.push(coords[0][i][1]);
+    				lngs.push(coords[0][i][0]);	
+				}
+				// calc the min and max lng and lat
+				var minlat = Math.min.apply(null, lats),
+					maxlat = Math.max.apply(null, lats);
+				var minlng = Math.min.apply(null, lngs),
+    				maxlng = Math.max.apply(null, lngs);
+				// create a bounding rectangle that can be used in leaflet
+				bbox = [[minlat,minlng],[maxlat,maxlng]];
+				map.fitBounds(bbox);
+			};
+				
+		};
+	};
 
 	
 

@@ -16,6 +16,7 @@
 	<script src="js/leaflet-0.7.2/leaflet.ajax.min.js"></script>
 	<script type="text/javascript" src="https://leafletjs.com/examples/choropleth/us-states.js"></script>
 	
+	
 	<style>
 		html, body {
 			height: 100%;
@@ -96,6 +97,8 @@
 		zoomOffset: -1
 	}).addTo(map);
 	var SuperfundData = null;
+	var statesuperfund = null;
+	var superfunding = new L.geoJson();
 	//console.log(statesData)
 	
     //loads superfund data
@@ -104,14 +107,18 @@
     	if (SuperfundData != null) {
     		map.removeLayer(SuperfundData);
         }
+		
 		if (activestatus == '' && nplStatus == ''){
+			
     		SuperfundData = L.tileLayer.wms('http://127.0.0.1:8081/geoserver/superfund/wms?', {
     			layers : 'superfund:SEMS_Ver_3',
     			transparent : true,
     			format : 'image/png',
     			cql_filter : "STATE_NAME IN ('" + statename + "')",
     			opacity : 1
-    		}).addTo(map);
+			}).addTo(map);
+			wfsSuperfundFinder(statename);
+			//map.addLayer(superfunding);
         }else if(statename != '' && nplStatus == ''){
 			SuperfundData = L.tileLayer.wms('http://127.0.0.1:8081/geoserver/superfund/wms?', {
     			layers : 'superfund:SEMS_Ver_3',
@@ -214,6 +221,42 @@
 		};
 	};
 
+	
+    
+	function wfsSuperfundFinder(thechoice){
+		console.log("check");
+		$.ajax('http://127.0.0.1:8081/geoserver/wfs',{
+     		type: 'GET',
+     		data: {
+        		service: 'WFS',
+        		version: '1.1.0',
+        		request: 'GetFeature',
+        		typename: 'superfund:SEMS_Ver_3',
+        		cql_filter: "STATE_NAME IN ('" + thechoice + "')",
+        		srsname: 'EPSG:4326',
+        		outputFormat: 'text/javascript',
+        	},
+    		dataType: 'jsonp',
+    		jsonpCallback:'callback:getJson',
+    		jsonp:'format_options'
+    	});
+		
+		console.log(superfunding);
+	};
+	function getJson(data) {
+		superfunding.clearLayers();	
+		console.log("check2");
+			console.log(data);
+
+			//superfunding.addData(data);
+			superfunding = L.geoJSON(data, {
+  				onEachFeature: function (feature, layer) {
+    				layer.bindPopup(feature.properties.PRIMARY_NA);
+  				}
+			}).addTo(map);
+			
+			console.log(superfunding);
+    	};
 	
 
 </script>
